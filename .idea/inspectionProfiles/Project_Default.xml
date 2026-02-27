@@ -1,0 +1,49 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="false" level="WARNING" enabled_by_default="false">
+      <option name="ignoredPackages">
+        <list>
+          <option value="aiogram" />
+          <option value="selenium" />
+          <option value="webdriver-manager" />
+          <option value="sqlalchemy" />
+          <option value="alembic" />
+          <option value="pymysql" />
+          <option value="cryptography" />
+          <option value="apscheduler" />
+          <option value="python-dotenv" />
+          <option value="beautifulsoup4" />
+          <option value="lxml" />
+          <option value="attrs" />
+          <option value="certifi" />
+          <option value="cffi" />
+          <option value="charset-normalizer" />
+          <option value="greenlet" />
+          <option value="h11" />
+          <option value="idna" />
+          <option value="Mako" />
+          <option value="MarkupSafe" />
+          <option value="outcome" />
+          <option value="packaging" />
+          <option value="pycparser" />
+          <option value="PySocks" />
+          <option value="pytz" />
+          <option value="requests" />
+          <option value="six" />
+          <option value="sniffio" />
+          <option value="sortedcontainers" />
+          <option value="soupsieve" />
+          <option value="trio" />
+          <option value="trio-websocket" />
+          <option value="typing_extensions" />
+          <option value="tzdata" />
+          <option value="tzlocal" />
+          <option value="urllib3" />
+          <option value="wsproto" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="SqlNoDataSourceInspection" enabled="false" level="WARNING" enabled_by_default="false" />
+  </profile>
+</component>
