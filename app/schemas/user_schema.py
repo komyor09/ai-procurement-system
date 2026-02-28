@@ -10,11 +10,14 @@ class UserCreate(BaseModel):
     """Схема создания пользователя"""
     description: str = Field(..., min_length=10, description="Описание профиля пользователя")
     min_budget: float = Field(default=0.0, ge=0.0, description="Минимальный бюджет тендера")
+    # Telegram ID передаётся ботом при регистрации; необязателен для прямых API-запросов
+    telegram_id: Optional[int] = Field(None, description="Уникальный Telegram ID пользователя")
 
 
 class UserResponse(BaseModel):
     """Схема ответа с данными пользователя"""
     id: int
+    telegram_id: Optional[int]
     description: str
     min_budget: float
     created_at: datetime

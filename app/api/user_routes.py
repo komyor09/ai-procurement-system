@@ -21,13 +21,47 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/users", tags=["users"])
 
 
+@router.get("/by-telegram/{telegram_id}", response_model=UserResponse)
+def get_user_by_telegram(telegram_id: int, db: Session = Depends(get_db)) -> UserResponse:
+    """
+    Возвращает пользователя по Telegram ID.
+    Используется ботом для проверки существующей регистрации.
+    Возвращает 404 если пользователь с таким telegram_id не найден.
+    """
+    user = (
+        db.query(User)
+        .filter(User.telegram_id == telegram_id)
+        .first()
+    )
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Пользователь с telegram_id {telegram_id} не найден",
+        )
+    return UserResponse.model_validate(user)
+
+
 @router.post("/create", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(payload: UserCreate, db: Session = Depends(get_db)) -> UserResponse:
     """
     Создаёт нового пользователя.
     Генерирует эмбеддинг для описания и запускает первичный матчинг.
+    Если передан telegram_id — проверяет уникальность перед созданием.
     """
     logger.info("Создание нового пользователя")
+
+    # Проверяем уникальность telegram_id если он передан
+    if payload.telegram_id is not None:
+        existing = (
+            db.query(User)
+            .filter(User.telegram_id == payload.telegram_id)
+            .first()
+        )
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Пользователь с telegram_id {payload.telegram_id} уже существует",
+            )
 
     # Генерируем эмбеддинг для описания пользователя
     try:
@@ -41,6 +75,7 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)) -> UserRespo
         )
 
     user = User(
+        telegram_id=payload.telegram_id,
         description=payload.description,
         embedding=embedding_json,
         min_budget=payload.min_budget,
@@ -49,7 +84,7 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)) -> UserRespo
     db.commit()
     db.refresh(user)
 
-    logger.info("Пользователь создан с ID: %d", user.id)
+    logger.info("Пользователь создан с ID: %d, telegram_id: %s", user.id, user.telegram_id)
 
     # Запускаем матчинг сразу после создания
     try:
