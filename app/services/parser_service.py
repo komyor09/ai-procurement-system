@@ -203,7 +203,7 @@ def run_all_parsers(db: Session) -> int:
     # При конфликте по url_hash — строка пропускается (rowcount = 0 для дубля).
     # Это MySQL-аналог INSERT IGNORE, но не подавляет другие ошибки.
     stmt = mysql_insert(RawTender).values(records)
-    stmt = stmt.on_duplicate_key_update(id=stmt.inserted.id)
+    stmt = stmt.prefix_with("IGNORE")
 
     try:
         result = db.execute(stmt)
