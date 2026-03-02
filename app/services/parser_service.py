@@ -25,6 +25,7 @@ from app.config import (
     GOSZAKUP_IMPORT_BATCH_SIZE,
 )
 from app.models.raw_tender import RawTender
+from decimal import Decimal
 
 logger = logging.getLogger(__name__)
 
@@ -173,8 +174,8 @@ def run_all_parsers(db: Session) -> int:
 
         description = _get_description(lot.get("raw_data"), title)
 
-        quantity = float("".join(lot.get("purchase_amount").split()))
-        budget = float("".join(lot.get("purchase_method").split()))
+        quantity = to_float(lot.get("purchase_amount"))
+        budget = to_float(lot.get("purchase_method"))
 
         records.append({
             "id": str(uuid.uuid4()),
@@ -218,3 +219,20 @@ def run_all_parsers(db: Session) -> int:
         db.rollback()
         logger.error("Ошибка вставки в raw_tenders: %s", exc, exc_info=True)
         return 0
+
+
+def to_float(value) -> float:
+    if value is None:
+        return 0.0
+
+    if isinstance(value, Decimal):
+        return float(value)
+
+    if isinstance(value, (int, float)):
+        return float(value)
+
+    if isinstance(value, str):
+        # убираем пробелы-разделители тысяч
+        return float(value.replace(" ", ""))
+
+    raise TypeError(f"Unsupported type for numeric conversion: {type(value)}")
