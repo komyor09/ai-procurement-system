@@ -33,6 +33,12 @@ class MatchResponse(BaseModel):
     similarity: float
     personal_score: float
     final_score: float
+    title: str
+    description: Optional[str]
+    deadline: Optional[datetime]
+    budget: Optional[float]
+    source: Optional[str]
+    url: Optional[str]
     shown: bool
     created_at: datetime
 

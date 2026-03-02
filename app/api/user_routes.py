@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 from app.models.match import Match
+from app.models.raw_tender import RawTender
+from app.models.it_tender import ITTender
 from app.models.feedback import Feedback
 from app.schemas.user_schema import UserCreate, UserResponse, MatchListResponse, MatchResponse
 from app.schemas.feedback_schema import FeedbackCreate, FeedbackResponse
@@ -118,8 +120,12 @@ def get_user_matches(
     db: Session = Depends(get_db),
 ) -> MatchListResponse:
     """
-    Возвращает список совпадений для пользователя,
-    отсортированных по убыванию итогового скора.
+    Возвращает список совпадений для пользователя с полными данными тендеров.
+
+    JOIN: matches → it_tenders → raw_tenders
+    Каждый элемент содержит поля совпадения (similarity, scores)
+    и данные тендера (title, description, deadline, budget, source, url).
+    Сортировка по final_score DESC.
     """
     user = db.get(User, user_id)
     if not user:
@@ -128,8 +134,11 @@ def get_user_matches(
             detail=f"Пользователь с ID {user_id} не найден",
         )
 
-    matches: List[Match] = (
-        db.query(Match)
+    # JOIN: matches → it_tenders → raw_tenders
+    rows = (
+        db.query(Match, RawTender)
+        .join(ITTender, Match.tender_id == ITTender.tender_id)
+        .join(RawTender, ITTender.tender_id == RawTender.id)
         .filter(Match.user_id == user_id)
         .order_by(Match.final_score.desc())
         .offset(offset)
@@ -139,15 +148,36 @@ def get_user_matches(
 
     total = db.query(Match).filter(Match.user_id == user_id).count()
 
-    # Помечаем показанные совпадения
-    for match in matches:
+    # Помечаем совпадения как показанные и собираем обогащённый ответ
+    result: List[MatchResponse] = []
+    for match, raw in rows:
         if not match.shown:
             match.shown = True
+
+        result.append(MatchResponse(
+            # Поля совпадения
+            id=match.id,
+            user_id=match.user_id,
+            tender_id=match.tender_id,
+            similarity=match.similarity,
+            personal_score=match.personal_score,
+            final_score=match.final_score,
+            shown=match.shown,
+            created_at=match.created_at,
+            # Данные тендера из raw_tenders
+            title=raw.title,
+            description=raw.description,
+            deadline=raw.deadline,
+            budget=raw.budget,
+            source=raw.source,
+            url=raw.url,
+        ))
+
     db.commit()
 
     return MatchListResponse(
         user_id=user_id,
-        matches=[MatchResponse.model_validate(m) for m in matches],
+        matches=result,
         total=total,
     )
 
@@ -171,17 +201,14 @@ def submit_feedback(
 
     # Обработка ключевого слова в комментарии — обновление минимального бюджета
     if payload.comment and "маленьк" in payload.comment.lower():
-        # Ищем совпадение для получения бюджета тендера
         match = (
             db.query(Match)
             .filter(Match.user_id == user_id, Match.tender_id == payload.tender_id)
             .first()
         )
         if match:
-            from app.models.it_tender import ITTender
             it_tender = db.get(ITTender, payload.tender_id)
             if it_tender and it_tender.budget:
-                # Устанавливаем min_budget как бюджет данного тендера
                 new_min = it_tender.budget
                 user.min_budget = new_min
                 logger.info(
