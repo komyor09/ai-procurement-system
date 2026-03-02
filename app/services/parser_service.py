@@ -125,6 +125,7 @@ def run_all_parsers(db: Session) -> int:
             lot_url,
             lot_name,
             purchase_amount,
+            purchase_method,
             deadline_date,
             raw_data,
             status
@@ -174,13 +175,9 @@ def run_all_parsers(db: Session) -> int:
 
         description = _get_description(lot.get("raw_data"), title)
 
-        budget = None
-        raw_amount = lot.get("purchase_amount")
-        if raw_amount is not None:
-            try:
-                budget = float(raw_amount)
-            except (TypeError, ValueError):
-                pass
+        quantity = float(lot.get("purchase_amount"))
+        budget = float(lot.get("purchase_method"))
+
 
         records.append({
             "id": str(uuid.uuid4()),
@@ -188,6 +185,7 @@ def run_all_parsers(db: Session) -> int:
             "title": title,
             "description": description,
             "budget": budget,
+            "quantity": quantity,
             "deadline": lot.get("deadline_date"),
             "url": url,
             "url_hash": url_hash,

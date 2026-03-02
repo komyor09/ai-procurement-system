@@ -182,6 +182,7 @@ def classify_new_tenders(db: Session) -> int:
                         tender_id=tender.id,
                         embedding=serialize_embedding(embedding),
                         budget=tender.budget,
+                        quantity=tender.quantity,
                         deadline=tender.deadline,
                         # cold-start: version=0; нормальный режим: текущая версия модели
                         model_version=0 if cold_start else current_version,

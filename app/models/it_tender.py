@@ -20,6 +20,8 @@ class ITTender(Base):
     embedding: Mapped[str] = mapped_column(LONGTEXT, nullable=False)
     # Бюджет (дублируется для удобства выборки)
     budget: Mapped[float] = mapped_column(Float, nullable=True)
+    # Количество лотов в объявлении
+    quantity: Mapped[float] = mapped_column(Float, nullable=True)
     # Дедлайн (дублируется для удобства выборки)
     deadline: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     # Версия глобальной модели, которая классифицировала этот тендер.
