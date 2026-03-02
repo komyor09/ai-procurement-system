@@ -175,8 +175,8 @@ def run_all_parsers(db: Session) -> int:
 
         description = _get_description(lot.get("raw_data"), title)
 
-        quantity = float(lot.get("purchase_amount"))
-        budget = float(lot.get("purchase_method"))
+        quantity = lot.get("purchase_amount")
+        budget = lot.get("purchase_method")
 
 
         records.append({
