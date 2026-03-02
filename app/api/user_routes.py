@@ -169,6 +169,7 @@ def get_user_matches(
             description=raw.description,
             deadline=raw.deadline,
             budget=raw.budget,
+            quantity=raw.quantity,
             source=raw.source,
             url=raw.url,
         ))

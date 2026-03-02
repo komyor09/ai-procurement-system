@@ -37,6 +37,7 @@ class MatchResponse(BaseModel):
     description: Optional[str]
     deadline: Optional[datetime]
     budget: Optional[float]
+    quantity: Optional[float]
     source: Optional[str]
     url: Optional[str]
     shown: bool

@@ -29,6 +29,8 @@ class RawTender(Base):
     description: Mapped[str] = mapped_column(Text, nullable=True)
     # Бюджет тендера
     budget: Mapped[float] = mapped_column(Float, nullable=True)
+    # Количество лотов в объявлении
+    quantity: Mapped[float] = mapped_column(Float, nullable=True)
     # Дедлайн подачи заявки
     deadline: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     # Ссылка на оригинальный тендер (полный URL, без индекса — слишком длинный)

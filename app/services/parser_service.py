@@ -120,19 +120,17 @@ def run_all_parsers(db: Session) -> int:
 
     # Запрашиваем lot_number для формирования уникального хеша
     query = text("""
-        SELECT
-            lot_number,
-            lot_url,
-            lot_name,
-            purchase_amount,
-            purchase_method,
-            deadline_date,
-            raw_data,
-            status
-        FROM lots
-        ORDER BY created_at DESC
-        LIMIT :batch_size
-    """)
+                 SELECT lot_number,
+                        lot_url,
+                        lot_name,
+                        purchase_amount,
+                        purchase_method,
+                        deadline_date,
+                        raw_data,
+                        status
+                 FROM lots
+                 ORDER BY created_at DESC LIMIT :batch_size
+                 """)
 
     try:
         with _goszakup_engine.connect() as conn:
@@ -175,9 +173,8 @@ def run_all_parsers(db: Session) -> int:
 
         description = _get_description(lot.get("raw_data"), title)
 
-        quantity = lot.get("purchase_amount")
-        budget = lot.get("purchase_method")
-
+        quantity = float("".join(lot.get("purchase_amount").split()))
+        budget = float("".join(lot.get("purchase_method").split()))
 
         records.append({
             "id": str(uuid.uuid4()),
